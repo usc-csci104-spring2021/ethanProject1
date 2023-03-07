@@ -67,9 +67,7 @@ public class TableManagerImpl implements TableManager{
     // create table
     final DirectorySubspace tableDir = rootDir.createOrOpen(db, PathUtil.from(tableName)).join();
 
-    System.out.println(tableName + "table created successfully!");
-
-
+    System.out.println(tableName + " table created successfully!");
 
     int numPrimaryKeys = primaryKeyAttributeNames.length;
 
@@ -78,28 +76,30 @@ public class TableManagerImpl implements TableManager{
     final DirectorySubspace attributeDir = tableDir.createOrOpen(db, PathUtil.from("attributes")).join();
     final DirectorySubspace primaryKeyDir = tableDir.createOrOpen(db, PathUtil.from("primaryKeys")).join();
 
-    // Add primaryKeys to primaryKeyDir
+    // primary keys first, then followed by rest of attribute names
 
+    // Add primaryKeys to row
+    Transaction tx = db.createTransaction();
+    Tuple completeKey = new Tuple();
     for (int i = 0; i < numPrimaryKeys; i++)
     {
-      Transaction tx = db.createTransaction();
-
       Tuple keyTuple = new Tuple();
       keyTuple.add(primaryKeyAttributeNames[i]).add(Tuple.from(attributeType[i]).pack());
 
-      Tuple valueTuple = new Tuple();
-
-      for (int j = 0; j < attributeNames.length; j++)
-      {
-        Tuple record = new Tuple();
-        record.add(attributeNames[j]).add(Tuple.from(attributeType[j]).pack());
-        valueTuple.add(record);
-      }
-
-      tx.set(keyTuple.pack(), valueTuple.pack());
-
+      completeKey.add(keyTuple);
     }
-    //for ()
+
+    // Next add rest of attributes
+    Tuple completeValue = new Tuple();
+    for (int j = numPrimaryKeys; j < numPrimaryKeys + attributeNames.length; j++)
+    {
+      Tuple valueTuple = new Tuple();
+      valueTuple.add(attributeNames[j]).add(Tuple.from(attributeType[j]).pack());
+
+      completeValue.add(valueTuple);
+    }
+
+    tx.set(completeKey.pack(), completeValue.pack());
 
     // check for table first
 /*    for (String key : tables.keySet())
