@@ -7,11 +7,10 @@ import com.apple.foundationdb.directory.PathUtil;
 import com.apple.foundationdb.subspace.Subspace;
 import com.apple.foundationdb.tuple.Tuple;
 import jdk.net.SocketFlow;
+import org.w3c.dom.Attr;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Array;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -198,8 +197,15 @@ public class TableManagerImpl implements TableManager{
 
       // get range
       Range r = metaDir.range();
+
       // iterate over key-value pairs in this range and make TableMetadata object from it
       List<KeyValue> keyValues = tx.getRange(r).asList().join();
+
+      // initialize TableMetaData properties, to be converted to arrays later
+      List<String> attributeNames = new ArrayList<>();
+      List<AttributeType> attributeTypes = new ArrayList<>();
+      List<String> primaryKeyAttributeNames = new ArrayList<>();
+
       for (KeyValue kv : keyValues)
       {
         System.out.println("Entered");
@@ -209,10 +215,17 @@ public class TableManagerImpl implements TableManager{
 
         // structure (tableName, tableValue)
         //System.out.println("attribute name:" + (String)keyTuple.get(0));
-        for (Object obj : keyTuple.getItems())
+        List<Object> items = keyTuple.getItems();
+
+        attributeNames.add((String)items.get(1));
+        attributeTypes.add(AttributeType.valueOf((String) items.get(2)));
+
+
+        for (Object obj : valueTuple.getItems())
         {
-          System.out.println("printing objs: " + obj);
+          System.out.println("printing value objs: " + obj);
         }
+
         TableMetadata tbm = new TableMetadata();
       }
     }
