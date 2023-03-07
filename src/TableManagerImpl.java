@@ -63,12 +63,36 @@ public class TableManagerImpl implements TableManager{
                          String[] primaryKeyAttributeNames) {
 
     // TODO: check parameters before doing anything with database
+    for (String key : tables.keySet())
+    {
+      if (tableName.equals(key))
+        return StatusCode.ATTRIBUTE_ALREADY_EXISTS;
+    }
+
+    // check for valid primaryKeys
+  if (primaryKeyAttributeNames.length > 0)
+    {
+      for (String key : primaryKeyAttributeNames)
+      {
+        if (key == "")
+          return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
+      }
+    }
+    else
+      return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
+
+    // check for valid attributes
+    if (attributeNames.length != attributeType.length)
+    {
+      return StatusCode.TABLE_CREATION_ATTRIBUTE_INVALID;
+    }
 
     // create table
     final DirectorySubspace tableDir = rootDir.createOrOpen(db, PathUtil.from(tableName)).join();
 
     System.out.println(tableName + " table created successfully!");
 
+    // add
     int numPrimaryKeys = primaryKeyAttributeNames.length;
 
     // Then subdirectories of primaryKeys and attributes
@@ -80,59 +104,53 @@ public class TableManagerImpl implements TableManager{
 
     // Add primaryKeys to row
     Transaction tx = db.createTransaction();
-    Tuple completeKey = new Tuple();
-    completeKey = completeKey.add(0).add(primaryKeyAttributeNames[0]);
-    /*for (int i = 0; i < numPrimaryKeys; i++)
+
+    Tuple attrNameTuple = new Tuple();
+    //completeKey = completeKey.add(0).add(primaryKeyAttributeNames[0]);
+    for (int i = 0; i < attributeNames.length; i++)
     {
-      Tuple keyTuple = new Tuple();
+      //Tuple keyTuple = new Tuple();
 
-      keyTuple.add(primaryKeyAttributeNames[i]);
-      keyTuple.add(0);
+      attrNameTuple.add(primaryKeyAttributeNames[i]);
+      //attrNameTuple.add(0);
 
-      completeKey.add(keyTuple);
-    }*/
+      //completeKey.add(keyTuple);
+    }
 
-    // Next add rest of attributes
-    Tuple completeValue = new Tuple();
-    completeValue = completeValue.add("").add(attributeNames[1]);
-   /* for (int j = numPrimaryKeys; j < numPrimaryKeys + attributeNames.length; j++)
+    Tuple attrTypeTuple = new Tuple();
+
+    for (int i = 0; i < attributeType.length; i++)
     {
-      Tuple valueTuple = new Tuple();
-      valueTuple.add(attributeNames[j]).add(Tuple.from(attributeType[j]).pack());
-
-      completeValue.add(valueTuple);
-    }*/
-
-    tx.set(tableDir.pack(completeKey), completeValue.pack());
-
-    // check for table first
-/*    for (String key : tables.keySet())
-    {
-      if (tableName.equals(key))
-        return StatusCode.ATTRIBUTE_ALREADY_EXISTS;
-    }*/
-
-    // check for valid primaryKeys
-/*    if (primaryKeyAttributeNames.length > 0)
-    {
-      for (String key : primaryKeyAttributeNames)
+      //attrTypeTuple.addObject()
+      if (attributeType[i] == AttributeType.INT)
       {
-        if (key == "")
-          return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
+        attrTypeTuple.add(0);
       }
-    }*/
-/*    else
-      return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
+      else if (attributeType[i] == AttributeType.VARCHAR)
+      {
+        attrTypeTuple.add("");
+      }
+      else
+      {
+        attrTypeTuple.add(0.0);
+      }
+    }
 
-    // check for valid attributes
-    if (attributeNames.length != attributeType.length)
+    // Next add primary Keys
+    Tuple primaryKeyTuple = new Tuple();
+    //completeValue = completeValue.add("").add(attributeNames[1]);
+    for (int i = numPrimaryKeys; i < numPrimaryKeys; i++)
     {
-      return StatusCode.TABLE_CREATION_ATTRIBUTE_INVALID;
-    }*/
+      primaryKeyTuple = primaryKeyTuple.add(primaryKeyAttributeNames[i]);
+    }
+
+    Tuple attributeTuple = new Tuple();
+    attributeTuple = attributeTuple.addAll(attrNameTuple).addAll(attrTypeTuple);
+    tx.set(attributeTuple.pack(), tableDir.pack(primaryKeyTuple));
 
     // create metadata of new table public TableMetadata(String[] attributeNames, AttributeType[] attributeTypes, String[] primaryKeys)
-//    TableMetadata tmd = new TableMetadata(attributeNames, attributeType, primaryKeyAttributeNames);
-//    tables.put(tableName, tmd);
+    TableMetadata tmd = new TableMetadata(attributeNames, attributeType, primaryKeyAttributeNames);
+    tables.put(tableName, tmd);
 
     return StatusCode.SUCCESS;
   }
