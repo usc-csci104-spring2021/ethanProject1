@@ -199,6 +199,7 @@ public class TableManagerImpl implements TableManager{
       List<KeyValue> keyValues = tx.getRange(r).asList().join();
       for (KeyValue kv : keyValues)
       {
+        System.out.println("Entered");
         // use Tuple api to transform bytes to key and value tuples
         Tuple keyTuple = Tuple.fromBytes(kv.getKey());
         Tuple valueTuple = Tuple.fromBytes(kv.getValue());
