@@ -86,7 +86,7 @@ public class TableManagerImpl implements TableManager{
       Tuple keyTuple = new Tuple();
 
       keyTuple.add(primaryKeyAttributeNames[i]);
-      keyTuple.addObject(attributeType[i]);
+      keyTuple.add(0);
 
       completeKey.add(keyTuple);
     }
