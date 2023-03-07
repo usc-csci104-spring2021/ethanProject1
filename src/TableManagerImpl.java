@@ -175,30 +175,16 @@ public class TableManagerImpl implements TableManager{
   @Override
   public HashMap<String, TableMetadata> listTables() {
     System.out.println("Running ListTables");
+    Range range = rootDir.range();
+    System.out.println(range.toString());
     //DirectorySubspace employeeTable = rootDir.open(db, PathUtil.from("employee")).join();
     //DirectorySubspace departmentTable = rootDir.open(db, PathUtil.from("department")).join();
     ReadTransaction rtx = db.createTransaction();
-    List<String> rootPath = new ArrayList<>();
-    rootPath.add("employee");
-    rootPath.add("department");
-    CompletableFuture<List<String>> future;
-    List<String> paths = new ArrayList<>();
-    future = rootDir.list(rtx, rootPath);
-    try {
-      for (String s : future.get())
-      {
-        System.out.println(s);
-      }
-    }
-    catch (Exception e)
-    {
-      System.out.println(e);
-    }
+
 
     //rootDir.subspace()
     //.out.print("Query Table [" + paths.get(paths.size() - 1) + "] with primary key " + primaryKey + ":");
 
-    HashMap<String, TableMetadata> result = new HashMap<>();
     Transaction tx = db.createTransaction();
 
     // make new hashmap using the tuples defined (attribute name, type) -> boolean primaryKey
@@ -208,10 +194,6 @@ public class TableManagerImpl implements TableManager{
 //    {
 //
 //    }
-    for (Map.Entry<String, TableMetadata> e : result.entrySet())
-    {
-
-    }
     System.out.println("Done with ListTables");
 
 
