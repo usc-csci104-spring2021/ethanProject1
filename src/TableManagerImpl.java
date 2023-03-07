@@ -5,6 +5,7 @@ import com.apple.foundationdb.directory.DirectorySubspace;
 import com.apple.foundationdb.directory.PathUtil;
 import com.apple.foundationdb.subspace.Subspace;
 import com.apple.foundationdb.tuple.Tuple;
+import jdk.net.SocketFlow;
 
 import java.util.HashMap;
 import java.util.List;
@@ -69,20 +70,37 @@ public class TableManagerImpl implements TableManager{
                          String[] primaryKeyAttributeNames) {
 
     // TODO: check parameters before doing anything with database
-    for (String key : tables.keySet())
+/*    for (String key : tables.keySet())
     {
       if (tableName.equals(key))
         return StatusCode.ATTRIBUTE_ALREADY_EXISTS;
+    }*/
+    if (attributeNames == null || attributeType == null)
+    {
+      return StatusCode.TABLE_CREATION_ATTRIBUTE_INVALID;
     }
+    if (primaryKeyAttributeNames == null)
+      return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
 
-    // check for valid primaryKeys
+    // check for valid primaryKeys and check if they're in attributeNames
   if (primaryKeyAttributeNames.length > 0)
     {
       for (String key : primaryKeyAttributeNames)
       {
         if (key == "")
           return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
+
+        boolean found = false;
+        for (String name : attributeNames){
+          if (name.equals(key)){
+            found = true;
+            break;
+          }
+        }
+        if (!found)
+          return StatusCode.TABLE_CREATION_PRIMARY_KEY_NOT_FOUND;
       }
+
     }
     else
       return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
