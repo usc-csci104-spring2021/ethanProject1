@@ -7,6 +7,7 @@ import com.apple.foundationdb.subspace.Subspace;
 import com.apple.foundationdb.tuple.Tuple;
 import jdk.net.SocketFlow;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,12 +176,17 @@ public class TableManagerImpl implements TableManager{
     System.out.println("Running ListTables");
     //DirectorySubspace employeeTable = rootDir.open(db, PathUtil.from("employee")).join();
     //DirectorySubspace departmentTable = rootDir.open(db, PathUtil.from("department")).join();
+    ReadTransaction rtx = db.createTransaction();
+    List<String> rootPath = new ArrayList<>();
+    rootPath.add("Tables");
 
-    List<String> paths = rootDir.getPath();
+    List<String> paths = new ArrayList<>();
+    paths = (List<String>) rootDir.list(rtx, rootPath);
     for (String s : paths)
     {
       System.out.println(s);
     }
+    //rootDir.subspace()
     //.out.print("Query Table [" + paths.get(paths.size() - 1) + "] with primary key " + primaryKey + ":");
 
     HashMap<String, TableMetadata> result = new HashMap<>();
