@@ -179,7 +179,8 @@ public class TableManagerImpl implements TableManager{
     //DirectorySubspace departmentTable = rootDir.open(db, PathUtil.from("department")).join();
     ReadTransaction rtx = db.createTransaction();
     List<String> rootPath = new ArrayList<>();
-    rootPath.add("Tables");
+    rootPath.add("employee");
+    rootPath.add("department");
     CompletableFuture<List<String>> future;
     List<String> paths = new ArrayList<>();
     future = rootDir.list(rtx, rootPath);
