@@ -1,5 +1,8 @@
 
 import com.apple.foundationdb.*;
+import com.apple.foundationdb.directory.DirectoryLayer;
+import com.apple.foundationdb.directory.DirectorySubspace;
+import com.apple.foundationdb.directory.PathUtil;
 import com.apple.foundationdb.tuple.Tuple;
 
 import java.util.HashMap;
@@ -11,42 +14,117 @@ import java.util.Map;
  */
 public class TableManagerImpl implements TableManager{
 
+  // make hierarchy of directories, root directory of key value pairs
+
   private HashMap<String, TableMetadata> tables;
   private FDB fdb;
+  private Database db;
+  private DirectorySubspace rootDir;
 
   // constructor for class
   public TableManagerImpl(){
     tables = new HashMap<>();
     fdb = FDB.selectAPIVersion(710);
+
+    // open database
+    try {
+      db = fdb.open();
+      System.out.println("Database opened!");
+    } catch (Exception e) {
+      System.out.println("ERROR: the database not successfully opened: " + e);
+    }
+
+    // instantiate root directory
+    try {
+      if (rootDir == null)
+      {
+        rootDir = DirectoryLayer.getDefault().createOrOpen(db,
+                PathUtil.from("Tables")).join();
+        System.out.println("Root dir made!");
+      }
+    } catch (Exception e) {
+      System.out.println("ERROR: root dir not made: " + e);
+    }
   }
 
+  public static void addAttributeValuePairToTable(Transaction tx, DirectorySubspace table,
+                                                  int primaryKey, String attributeName, Object attributeValue) {
+    Tuple keyTuple = new Tuple();
+    keyTuple = keyTuple.add(primaryKey).add(attributeName);
+
+    Tuple valueTuple = new Tuple();
+    valueTuple = valueTuple.addObject(attributeValue);
+    tx.set(table.pack(keyTuple), valueTuple.pack());
+  }
+
+  // primaryKeyAttributeNames is subset of attributeNames
   @Override
   public StatusCode createTable(String tableName, String[] attributeNames, AttributeType[] attributeType,
                          String[] primaryKeyAttributeNames) {
+
+    // TODO: check parameters before doing anything with database
+
+    // create table
+    final DirectorySubspace tableDir = rootDir.createOrOpen(db, PathUtil.from(tableName)).join();
+
+    System.out.println(tableName + "table created successfully!");
+
+
+
+    int numPrimaryKeys = primaryKeyAttributeNames.length;
+
+    // Then subdirectories of primaryKeys and attributes
+
+    final DirectorySubspace attributeDir = tableDir.createOrOpen(db, PathUtil.from("attributes")).join();
+    final DirectorySubspace primaryKeyDir = tableDir.createOrOpen(db, PathUtil.from("primaryKeys")).join();
+
+    // Add primaryKeys to primaryKeyDir
+
+    for (int i = 0; i < numPrimaryKeys; i++)
+    {
+      Transaction tx = db.createTransaction();
+
+      Tuple keyTuple = new Tuple();
+      keyTuple.add(primaryKeyAttributeNames[i]).add(Tuple.from(attributeType[i]).pack());
+
+      Tuple valueTuple = new Tuple();
+
+      for (int j = 0; j < attributeNames.length; j++)
+      {
+        Tuple record = new Tuple();
+        record.add(attributeNames[j]).add(Tuple.from(attributeType[j]).pack());
+        valueTuple.add(record);
+      }
+
+      tx.set(keyTuple.pack(), valueTuple.pack());
+
+    }
+    //for ()
+
     // check for table first
-    for (String key : tables.keySet())
+/*    for (String key : tables.keySet())
     {
       if (tableName.equals(key))
         return StatusCode.ATTRIBUTE_ALREADY_EXISTS;
-    }
+    }*/
 
     // check for valid primaryKeys
-    if (primaryKeyAttributeNames.length > 0)
+/*    if (primaryKeyAttributeNames.length > 0)
     {
       for (String key : primaryKeyAttributeNames)
       {
         if (key == "")
           return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
       }
-    }
-    else
+    }*/
+/*    else
       return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
 
     // check for valid attributes
     if (attributeNames.length != attributeType.length)
     {
       return StatusCode.TABLE_CREATION_ATTRIBUTE_INVALID;
-    }
+    }*/
 
     // create metadata of new table public TableMetadata(String[] attributeNames, AttributeType[] attributeTypes, String[] primaryKeys)
     TableMetadata tmd = new TableMetadata(attributeNames, attributeType, primaryKeyAttributeNames);
@@ -88,7 +166,7 @@ public class TableManagerImpl implements TableManager{
   public StatusCode addAttribute(String tableName, String attributeName, AttributeType attributeType) {
     TableMetadata value = tables.get(tableName);
     // check table
-    if (value == null)
+    /*if (value == null)
     {
       return StatusCode.TABLE_NOT_FOUND;
     }
@@ -103,7 +181,10 @@ public class TableManagerImpl implements TableManager{
       return StatusCode.ATTRIBUTE_ALREADY_EXISTS;
     }
 
-    value.getAttributes().put(attributeName, attributeType);
+    value.getAttributes().put(attributeName, attributeType);*/
+
+    Tuple keyTuple = new Tuple();
+    //keyTuple = keyTuple.add()
 
     return StatusCode.SUCCESS;
   }
