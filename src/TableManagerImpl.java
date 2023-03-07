@@ -70,11 +70,8 @@ public class TableManagerImpl implements TableManager{
                          String[] primaryKeyAttributeNames) {
 
     // TODO: check parameters before doing anything with database
-/*    for (String key : tables.keySet())
-    {
-      if (tableName.equals(key))
-        return StatusCode.ATTRIBUTE_ALREADY_EXISTS;
-    }*/
+    System.out.println("Running createTable test");
+
     if (attributeNames == null || attributeType == null)
     {
       return StatusCode.TABLE_CREATION_ATTRIBUTE_INVALID;
@@ -142,6 +139,7 @@ public class TableManagerImpl implements TableManager{
 
     //meta = Subspace()
     System.out.println(tableName + " table created successfully!");
+    System.out.println("createTable Test done");
 
     return StatusCode.SUCCESS;
   }
@@ -149,6 +147,7 @@ public class TableManagerImpl implements TableManager{
   @Override
   public StatusCode deleteTable(String tableName) {
 //    // check if table exists
+      System.out.println("Running deleteTable");
 //    if (!tables.containsKey(tableName))
 //    {
 //      return StatusCode.TABLE_NOT_FOUND;
@@ -166,14 +165,16 @@ public class TableManagerImpl implements TableManager{
 //    }
 //    // from local hashmap
 //    tables.remove(tableName);
+    System.out.println("Done with deleteTable");
     return StatusCode.SUCCESS;
 
   }
 
   @Override
   public HashMap<String, TableMetadata> listTables() {
-    DirectorySubspace employeeTable = rootDir.open(db, PathUtil.from("employee")).join();
-    DirectorySubspace departmentTable = rootDir.open(db, PathUtil.from("department")).join();
+    System.out.println("Running ListTables");
+    //DirectorySubspace employeeTable = rootDir.open(db, PathUtil.from("employee")).join();
+    //DirectorySubspace departmentTable = rootDir.open(db, PathUtil.from("department")).join();
 
     List<String> paths = rootDir.getPath();
     for (String s : paths)
@@ -196,6 +197,7 @@ public class TableManagerImpl implements TableManager{
     {
 
     }
+    System.out.println("Done with ListTables");
 
 
     return null;
@@ -204,6 +206,8 @@ public class TableManagerImpl implements TableManager{
 
   @Override
   public StatusCode addAttribute(String tableName, String attributeName, AttributeType attributeType) {
+
+    System.out.println("Running addAttribute");
     TableMetadata value = tables.get(tableName);
     // check table
     /*if (value == null)
@@ -225,12 +229,13 @@ public class TableManagerImpl implements TableManager{
 
     // Tuple keyTuple = new Tuple();
     //keyTuple = keyTuple.add()
-
+    System.out.println("Done with addAttribute");
     return StatusCode.SUCCESS;
   }
 
   @Override
   public StatusCode dropAttribute(String tableName, String attributeName) {
+    System.out.println("Running dropAttribute");
 //    TableMetadata value = tables.get(tableName);
 //    // check if table exists
 //    if (value == null)
@@ -263,7 +268,7 @@ public class TableManagerImpl implements TableManager{
 //      }
 //      // remove from local
 //      attributes.remove(attributeName);
-
+      System.out.println("Done with dropAttribute");
       return StatusCode.SUCCESS;
     //}
   }
