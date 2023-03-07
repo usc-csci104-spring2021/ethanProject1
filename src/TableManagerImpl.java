@@ -185,6 +185,8 @@ public class TableManagerImpl implements TableManager{
     byte[] dirBytes = "Tables".getBytes();
     Subspace dir = new Subspace(dirBytes);
 
+    byte[] results = tx.get(Tuple.from("Tables").pack()).join();
+    System.out.println(Tuple.fromBytes(results).getString(0));
     // Get all keys with that directory prefix
     AsyncIterable<KeyValue> result = tx.getRange(range);
 
