@@ -178,16 +178,22 @@ public class TableManagerImpl implements TableManager{
   @Override
   public HashMap<String, TableMetadata> listTables() {
     // initialize HashMap to return
-    Map<String, TableMetadata> result = new HashMap<>();
+    HashMap<String, TableMetadata> result = new HashMap<>();
 
     Transaction tx = db.createTransaction();
 
     // List all subdirectories under root ("tables"), these are the individual tables
     List<String> tableDirs = rootDir.list(db).join();
 
+
     for (String tableStr : tableDirs)
     {
       System.out.println("Table: " + tableStr);
+
+      // initialize TableMetaData properties, to be converted to arrays later
+      List<String> attributeNames = new ArrayList<>();
+      List<AttributeType> attributeTypes = new ArrayList<>();
+      List<String> primaryKeyAttributeNames = new ArrayList<>();
 
       // go to meta subdirectory
       List<String> path = new ArrayList<>();
@@ -201,11 +207,6 @@ public class TableManagerImpl implements TableManager{
       // iterate over key-value pairs in this range and make TableMetadata object from it
       List<KeyValue> keyValues = tx.getRange(r).asList().join();
 
-      // initialize TableMetaData properties, to be converted to arrays later
-      List<String> attributeNames = new ArrayList<>();
-      List<AttributeType> attributeTypes = new ArrayList<>();
-      List<String> primaryKeyAttributeNames = new ArrayList<>();
-
       for (KeyValue kv : keyValues)
       {
         System.out.println("Entered");
@@ -215,26 +216,40 @@ public class TableManagerImpl implements TableManager{
 
         // structure (tableName, tableValue)
         //System.out.println("attribute name:" + (String)keyTuple.get(0));
-        List<Object> items = keyTuple.getItems();
+        List<Object> keyItems = keyTuple.getItems();
+        List<Object> valueItems = valueTuple.getItems();
 
-        attributeNames.add((String)items.get(1));
-        attributeTypes.add(AttributeType.valueOf((String) items.get(2)));
+        attributeNames.add((String)keyItems.get(1));
+        attributeTypes.add(AttributeType.valueOf((String) keyItems.get(2)));
 
+        // check if primary key attribute
+        if ((Boolean) valueItems.get(0))
+        {
+          primaryKeyAttributeNames.add((String)keyItems.get(1));
+        }
 
         for (Object obj : valueTuple.getItems())
         {
           System.out.println("printing value objs: " + obj);
         }
 
-        TableMetadata tbm = new TableMetadata();
       }
+      // convert to arrays
+      String[] attrNameArr = attributeNames.toArray(new String[attributeNames.size()]);
+      AttributeType[] attrTypeArr = attributeTypes.toArray(new AttributeType[attributeTypes.size()]);
+      String[] primKeyAttrNamesArr = primaryKeyAttributeNames.toArray(new String[primaryKeyAttributeNames.size()]);
+
+
+      // make TableMetadata object
+      TableMetadata tbm = new TableMetadata(attrNameArr, attrTypeArr, primKeyAttrNamesArr);
+      result.put(tableStr, tbm);
+
     }
 
     System.out.println("Done with ListTables");
 
 
-    return null;
-    //return tables;
+    return result;
   }
 
   @Override
