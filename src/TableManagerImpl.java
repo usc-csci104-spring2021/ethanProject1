@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * TableManagerImpl implements interfaces in {#TableManager}. You should put your implementation
@@ -179,13 +180,20 @@ public class TableManagerImpl implements TableManager{
     ReadTransaction rtx = db.createTransaction();
     List<String> rootPath = new ArrayList<>();
     rootPath.add("Tables");
-
+    CompletableFuture<List<String>> future;
     List<String> paths = new ArrayList<>();
-    paths = (List<String>) rootDir.list(rtx, rootPath);
-    for (String s : paths)
-    {
-      System.out.println(s);
+    future = rootDir.list(rtx, rootPath);
+    try {
+      for (String s : future.get())
+      {
+        System.out.println(s);
+      }
     }
+    catch (Exception e)
+    {
+      System.out.println(e);
+    }
+
     //rootDir.subspace()
     //.out.print("Query Table [" + paths.get(paths.size() - 1) + "] with primary key " + primaryKey + ":");
 
