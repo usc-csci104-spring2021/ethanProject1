@@ -3,9 +3,11 @@ import com.apple.foundationdb.*;
 import com.apple.foundationdb.directory.DirectoryLayer;
 import com.apple.foundationdb.directory.DirectorySubspace;
 import com.apple.foundationdb.directory.PathUtil;
+import com.apple.foundationdb.subspace.Subspace;
 import com.apple.foundationdb.tuple.Tuple;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,6 +22,9 @@ public class TableManagerImpl implements TableManager{
   private FDB fdb;
   private Database db;
   private DirectorySubspace rootDir;
+  private DirectorySubspace meta;
+
+  private DirectorySubspace raw;
 
   // constructor for class
   public TableManagerImpl(){
@@ -41,6 +46,7 @@ public class TableManagerImpl implements TableManager{
         rootDir = DirectoryLayer.getDefault().createOrOpen(db,
                 PathUtil.from("Tables")).join();
         System.out.println("Root dir made!");
+
       }
     } catch (Exception e) {
       System.out.println("ERROR: root dir not made: " + e);
@@ -90,67 +96,34 @@ public class TableManagerImpl implements TableManager{
     // create table
     final DirectorySubspace tableDir = rootDir.createOrOpen(db, PathUtil.from(tableName)).join();
 
-    System.out.println(tableName + " table created successfully!");
+    // make meta data and raw data
+    meta = tableDir.createOrOpen(db, PathUtil.from("meta")).join();
+    raw = tableDir.createOrOpen(db, PathUtil.from("raw")).join();
 
-    // add
-    int numPrimaryKeys = primaryKeyAttributeNames.length;
-
-    // Then subdirectories of primaryKeys and attributes
-
-    //final DirectorySubspace attributeDir = tableDir.createOrOpen(db, PathUtil.from("attributes")).join();
-    //final DirectorySubspace primaryKeyDir = tableDir.createOrOpen(db, PathUtil.from("primaryKeys")).join();
-
-    // primary keys first, then followed by rest of attribute names
-
-    // Add primaryKeys to row
     Transaction tx = db.createTransaction();
-
-    Tuple attrNameTuple = new Tuple();
     //completeKey = completeKey.add(0).add(primaryKeyAttributeNames[0]);
     for (int i = 0; i < attributeNames.length; i++)
     {
-      //Tuple keyTuple = new Tuple();
+      Tuple keyTuple = new Tuple();
+      keyTuple.add(attributeNames[i]);
+      keyTuple.add(attributeType[i].name());
 
-      attrNameTuple.add(primaryKeyAttributeNames[i]);
-      //attrNameTuple.add(0);
-
-      //completeKey.add(keyTuple);
+      // primaryKey or not
+      boolean found = false;
+      for (String s : primaryKeyAttributeNames)
+      {
+        if (s.equals(attributeNames[i])) {
+          found = true;
+          break;
+        }
+      }
+      Tuple valueTuple = new Tuple();
+      valueTuple.add(found);
+      tx.set(meta.pack(keyTuple), valueTuple.pack());
     }
 
-    Tuple attrTypeTuple = new Tuple();
-
-    for (int i = 0; i < attributeType.length; i++)
-    {
-      //attrTypeTuple.addObject()
-      if (attributeType[i] == AttributeType.INT)
-      {
-        attrTypeTuple.add(0);
-      }
-      else if (attributeType[i] == AttributeType.VARCHAR)
-      {
-        attrTypeTuple.add("");
-      }
-      else
-      {
-        attrTypeTuple.add(0.0);
-      }
-    }
-
-    // Next add primary Keys
-    Tuple primaryKeyTuple = new Tuple();
-    //completeValue = completeValue.add("").add(attributeNames[1]);
-    for (int i = numPrimaryKeys; i < numPrimaryKeys; i++)
-    {
-      primaryKeyTuple = primaryKeyTuple.add(primaryKeyAttributeNames[i]);
-    }
-
-    Tuple attributeTuple = new Tuple();
-    attributeTuple = attributeTuple.addAll(attrNameTuple).addAll(attrTypeTuple);
-    tx.set(attributeTuple.pack(), tableDir.pack(primaryKeyTuple));
-
-    // create metadata of new table public TableMetadata(String[] attributeNames, AttributeType[] attributeTypes, String[] primaryKeys)
-    TableMetadata tmd = new TableMetadata(attributeNames, attributeType, primaryKeyAttributeNames);
-    tables.put(tableName, tmd);
+    //meta = Subspace()
+    System.out.println(tableName + " table created successfully!");
 
     return StatusCode.SUCCESS;
   }
@@ -181,6 +154,32 @@ public class TableManagerImpl implements TableManager{
 
   @Override
   public HashMap<String, TableMetadata> listTables() {
+    DirectorySubspace employeeTable = rootDir.open(db, PathUtil.from("employee")).join();
+    DirectorySubspace departmentTable = rootDir.open(db, PathUtil.from("department")).join();
+
+    List<String> paths = rootDir.getPath();
+    for (String s : paths)
+    {
+      System.out.println(s);
+    }
+    //.out.print("Query Table [" + paths.get(paths.size() - 1) + "] with primary key " + primaryKey + ":");
+
+    HashMap<String, TableMetadata> result = new HashMap<>();
+    Transaction tx = db.createTransaction();
+
+    // make new hashmap using the tuples defined (attribute name, type) -> boolean primaryKey
+
+    // first read the keys
+//    for (k, v in tr.get_range('m', '\xFF'))
+//    {
+//
+//    }
+    for (Map.Entry<String, TableMetadata> e : result.entrySet())
+    {
+
+    }
+
+
     return null;
     //return tables;
   }
