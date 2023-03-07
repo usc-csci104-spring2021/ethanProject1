@@ -123,8 +123,8 @@ public class TableManagerImpl implements TableManager{
     for (int i = 0; i < attributeNames.length; i++)
     {
       Tuple keyTuple = new Tuple();
-      keyTuple.add(attributeNames[i]);
-      keyTuple.add(attributeType[i].name());
+      keyTuple = keyTuple.add(attributeNames[i]);
+      keyTuple = keyTuple.add(attributeType[i].name());
 
       // primaryKey or not
       boolean found = false;
@@ -136,7 +136,7 @@ public class TableManagerImpl implements TableManager{
         }
       }
       Tuple valueTuple = new Tuple();
-      valueTuple.add(found);
+      valueTuple = valueTuple.add(found);
       tx.set(meta.pack(keyTuple), valueTuple.pack());
     }
 
@@ -175,34 +175,39 @@ public class TableManagerImpl implements TableManager{
 
   @Override
   public HashMap<String, TableMetadata> listTables() {
-    System.out.println("Running ListTables");
-    Range range = rootDir.range();
-    System.out.println(range.toString());
-    // Create transaction
+    // initialize HashMap to return
+    Map<String, TableMetadata> result = new HashMap<>();
+
     Transaction tx = db.createTransaction();
 
-    // Define Directory to look into
-    byte[] dirBytes = "Tables".getBytes();
-    Subspace dir = new Subspace(dirBytes);
+    // List all subdirectories under root ("tables"), these are the individual tables
+    List<String> tableDirs = rootDir.list(db).join();
 
-    byte[] results = tx.get(Tuple.from("Tables").pack()).join();
-    System.out.println(Tuple.fromBytes(results).getString(0));
-    // Get all keys with that directory prefix
-    AsyncIterable<KeyValue> result = tx.getRange(range);
-
-    for (KeyValue kv : result)
+    for (String tableStr : tableDirs)
     {
-      byte[] key = kv.getKey();
-      System.out.println("Key: " + new String(key));
+      System.out.println("Table: " + tableStr);
+
+      // go to meta subdirectory
+      List<String> path = new ArrayList<>();
+      path.add(tableStr);
+      path.add("meta");
+      DirectorySubspace metaDir = rootDir.open(db, path).join();
+
+      // get range
+      Range r = metaDir.range();
+      // iterate over key-value pairs in this range and make TableMetadata object from it
+      List<KeyValue> keyValues = tx.getRange(r).asList().join();
+      for (KeyValue kv : keyValues)
+      {
+        // use Tuple api to transform bytes to key and value tuples
+        Tuple keyTuple = Tuple.fromBytes(kv.getKey());
+        Tuple valueTuple = Tuple.fromBytes(kv.getValue());
+
+        // structure (tableName, tableValue)
+        System.out.println("attribute name:" + (String)keyTuple.get(0));
+        TableMetadata tbm = new TableMetadata();
+      }
     }
-
-
-
-
-    //rootDir.subspace()
-    //.out.print("Query Table [" + paths.get(paths.size() - 1) + "] with primary key " + primaryKey + ":");
-
-    //Transaction tx = db.createTransaction();
 
     System.out.println("Done with ListTables");
 
