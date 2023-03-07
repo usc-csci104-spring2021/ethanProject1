@@ -144,6 +144,9 @@ public class TableManagerImpl implements TableManager{
     System.out.println(tableName + " table created successfully!");
     System.out.println("createTable Test done");
 
+    // commit transaction
+    tx.commit().join();
+
     return StatusCode.SUCCESS;
   }
 
