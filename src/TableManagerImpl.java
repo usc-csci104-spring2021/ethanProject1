@@ -204,7 +204,11 @@ public class TableManagerImpl implements TableManager{
         Tuple valueTuple = Tuple.fromBytes(kv.getValue());
 
         // structure (tableName, tableValue)
-        System.out.println("attribute name:" + (String)keyTuple.get(0));
+        //System.out.println("attribute name:" + (String)keyTuple.get(0));
+        for (Object obj : keyTuple.getItems())
+        {
+          System.out.println("printing objs: " + obj);
+        }
         TableMetadata tbm = new TableMetadata();
       }
     }
