@@ -1,5 +1,6 @@
 
 import com.apple.foundationdb.*;
+import com.apple.foundationdb.async.AsyncIterable;
 import com.apple.foundationdb.directory.DirectoryLayer;
 import com.apple.foundationdb.directory.DirectorySubspace;
 import com.apple.foundationdb.directory.PathUtil;
@@ -177,23 +178,30 @@ public class TableManagerImpl implements TableManager{
     System.out.println("Running ListTables");
     Range range = rootDir.range();
     System.out.println(range.toString());
-    //DirectorySubspace employeeTable = rootDir.open(db, PathUtil.from("employee")).join();
-    //DirectorySubspace departmentTable = rootDir.open(db, PathUtil.from("department")).join();
-    ReadTransaction rtx = db.createTransaction();
+    // Create transaction
+    Transaction tx = db.createTransaction();
+
+    // Define Directory to look into
+    byte[] dirBytes = "Tables".getBytes();
+    Subspace dir = new Subspace(dirBytes);
+
+    // Get all keys with that directory prefix
+    AsyncIterable<KeyValue> result = tx.getRange(dir.range());
+
+    for (KeyValue kv : result)
+    {
+      byte[] key = kv.getKey();
+      System.out.println("Key: " + new String(key));
+    }
+
+
 
 
     //rootDir.subspace()
     //.out.print("Query Table [" + paths.get(paths.size() - 1) + "] with primary key " + primaryKey + ":");
 
-    Transaction tx = db.createTransaction();
+    //Transaction tx = db.createTransaction();
 
-    // make new hashmap using the tuples defined (attribute name, type) -> boolean primaryKey
-
-    // first read the keys
-//    for (k, v in tr.get_range('m', '\xFF'))
-//    {
-//
-//    }
     System.out.println("Done with ListTables");
 
 
