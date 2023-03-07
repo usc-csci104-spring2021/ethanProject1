@@ -186,7 +186,7 @@ public class TableManagerImpl implements TableManager{
     Subspace dir = new Subspace(dirBytes);
 
     // Get all keys with that directory prefix
-    AsyncIterable<KeyValue> result = tx.getRange(dir.range());
+    AsyncIterable<KeyValue> result = tx.getRange(range);
 
     for (KeyValue kv : result)
     {
