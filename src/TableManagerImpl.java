@@ -73,15 +73,16 @@ public class TableManagerImpl implements TableManager{
 
     // Then subdirectories of primaryKeys and attributes
 
-    final DirectorySubspace attributeDir = tableDir.createOrOpen(db, PathUtil.from("attributes")).join();
-    final DirectorySubspace primaryKeyDir = tableDir.createOrOpen(db, PathUtil.from("primaryKeys")).join();
+    //final DirectorySubspace attributeDir = tableDir.createOrOpen(db, PathUtil.from("attributes")).join();
+    //final DirectorySubspace primaryKeyDir = tableDir.createOrOpen(db, PathUtil.from("primaryKeys")).join();
 
     // primary keys first, then followed by rest of attribute names
 
     // Add primaryKeys to row
     Transaction tx = db.createTransaction();
     Tuple completeKey = new Tuple();
-    for (int i = 0; i < numPrimaryKeys; i++)
+    completeKey = completeKey.add(0).add(primaryKeyAttributeNames[0]);
+    /*for (int i = 0; i < numPrimaryKeys; i++)
     {
       Tuple keyTuple = new Tuple();
 
@@ -89,19 +90,20 @@ public class TableManagerImpl implements TableManager{
       keyTuple.add(0);
 
       completeKey.add(keyTuple);
-    }
+    }*/
 
     // Next add rest of attributes
     Tuple completeValue = new Tuple();
-    for (int j = numPrimaryKeys; j < numPrimaryKeys + attributeNames.length; j++)
+    completeValue = completeValue.add("").add(attributeNames[1]);
+   /* for (int j = numPrimaryKeys; j < numPrimaryKeys + attributeNames.length; j++)
     {
       Tuple valueTuple = new Tuple();
       valueTuple.add(attributeNames[j]).add(Tuple.from(attributeType[j]).pack());
 
       completeValue.add(valueTuple);
-    }
+    }*/
 
-    tx.set(completeKey.pack(), completeValue.pack());
+    tx.set(tableDir.pack(completeKey), completeValue.pack());
 
     // check for table first
 /*    for (String key : tables.keySet())
@@ -129,39 +131,40 @@ public class TableManagerImpl implements TableManager{
     }*/
 
     // create metadata of new table public TableMetadata(String[] attributeNames, AttributeType[] attributeTypes, String[] primaryKeys)
-    TableMetadata tmd = new TableMetadata(attributeNames, attributeType, primaryKeyAttributeNames);
-    tables.put(tableName, tmd);
+//    TableMetadata tmd = new TableMetadata(attributeNames, attributeType, primaryKeyAttributeNames);
+//    tables.put(tableName, tmd);
 
     return StatusCode.SUCCESS;
   }
 
   @Override
   public StatusCode deleteTable(String tableName) {
-    // check if table exists
-    if (!tables.containsKey(tableName))
-    {
-      return StatusCode.TABLE_NOT_FOUND;
-    }
-    // connect to db to do so
-    try(Database db = fdb.open()) {
-      Transaction transaction = db.createTransaction();
-      Tuple tuple = Tuple.from(tableName);
-      transaction.clear(tuple.range());
-      transaction.commit();
-    }
-    catch (Exception e)
-    {
-      System.out.println(e);
-    }
-    // from local hashmap
-    tables.remove(tableName);
+//    // check if table exists
+//    if (!tables.containsKey(tableName))
+//    {
+//      return StatusCode.TABLE_NOT_FOUND;
+//    }
+//    // connect to db to do so
+//    try(Database db = fdb.open()) {
+//      Transaction transaction = db.createTransaction();
+//      Tuple tuple = Tuple.from(tableName);
+//      transaction.clear(tuple.range());
+//      transaction.commit();
+//    }
+//    catch (Exception e)
+//    {
+//      System.out.println(e);
+//    }
+//    // from local hashmap
+//    tables.remove(tableName);
     return StatusCode.SUCCESS;
 
   }
 
   @Override
   public HashMap<String, TableMetadata> listTables() {
-    return tables;
+    return null;
+    //return tables;
   }
 
   @Override
@@ -185,7 +188,7 @@ public class TableManagerImpl implements TableManager{
 
     value.getAttributes().put(attributeName, attributeType);*/
 
-    Tuple keyTuple = new Tuple();
+    // Tuple keyTuple = new Tuple();
     //keyTuple = keyTuple.add()
 
     return StatusCode.SUCCESS;
@@ -193,51 +196,51 @@ public class TableManagerImpl implements TableManager{
 
   @Override
   public StatusCode dropAttribute(String tableName, String attributeName) {
-    TableMetadata value = tables.get(tableName);
-    // check if table exists
-    if (value == null)
-    {
-      return StatusCode.TABLE_NOT_FOUND;
-    }
-    // check attribute name/type
-    if (attributeName == "")
-    {
-      return StatusCode.TABLE_CREATION_ATTRIBUTE_INVALID;
-    }
-    // attribute already exists
-    HashMap<String, AttributeType> attributes = value.getAttributes();
-    if (attributes.containsKey(attributeName))
-    {
-      return StatusCode.ATTRIBUTE_NOT_FOUND;
-    }
-    else
-    {
-      // remove from db
-      try(Database db = fdb.open()) {
-        Transaction transaction = db.createTransaction();
-        Tuple tuple = Tuple.from(tableName);
-        transaction.clear(tuple.range());
-        transaction.commit();
-      }
-      catch (Exception e)
-      {
-        System.out.println(e);
-      }
-      // remove from local
-      attributes.remove(attributeName);
+//    TableMetadata value = tables.get(tableName);
+//    // check if table exists
+//    if (value == null)
+//    {
+//      return StatusCode.TABLE_NOT_FOUND;
+//    }
+//    // check attribute name/type
+//    if (attributeName == "")
+//    {
+//      return StatusCode.TABLE_CREATION_ATTRIBUTE_INVALID;
+//    }
+//    // attribute already exists
+//    HashMap<String, AttributeType> attributes = value.getAttributes();
+//    if (attributes.containsKey(attributeName))
+//    {
+//      return StatusCode.ATTRIBUTE_NOT_FOUND;
+//    }
+//    else
+//    {
+//      // remove from db
+//      try(Database db = fdb.open()) {
+//        Transaction transaction = db.createTransaction();
+//        Tuple tuple = Tuple.from(tableName);
+//        transaction.clear(tuple.range());
+//        transaction.commit();
+//      }
+//      catch (Exception e)
+//      {
+//        System.out.println(e);
+//      }
+//      // remove from local
+//      attributes.remove(attributeName);
 
       return StatusCode.SUCCESS;
-    }
+    //}
   }
 
   @Override
   public StatusCode dropAllTables() {
-    // clear all inner tables
-    for (Map.Entry<String, TableMetadata> entry: tables.entrySet()){
-      deleteTable(entry.getKey());
-    }
-
-    tables.clear();
+//    // clear all inner tables
+//    for (Map.Entry<String, TableMetadata> entry: tables.entrySet()){
+//      deleteTable(entry.getKey());
+//    }
+//
+//    tables.clear();
 
     return StatusCode.SUCCESS;
   }
