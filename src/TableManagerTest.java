@@ -186,7 +186,7 @@ public class TableManagerTest {
   public void unitTest6() {
     System.out.println();
     System.out.println("TEST 6");
-    /*
+
     tableManager.dropAllTables();
 
     int numberOfTables = 1000;
@@ -212,8 +212,7 @@ public class TableManagerTest {
     }
     HashMap<String, TableMetadata> tables = tableManager.listTables();
     assertEquals(expectTables, tables);
-    */
-    assertEquals(true, true);
+
   }
 
   /**
@@ -221,7 +220,7 @@ public class TableManagerTest {
    */
   @Test
   public void unitTest7() {
-    /*
+
     System.out.println();
     System.out.println("TEST 7");
 
@@ -255,7 +254,5 @@ public class TableManagerTest {
     assertEquals(1, tables.size());
     assertEquals(employeeTable, tables.get(EmployeeTableName));
 
-     */
-    assertEquals(true, true);
   }
 }
