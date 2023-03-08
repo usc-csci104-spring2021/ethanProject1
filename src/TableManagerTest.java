@@ -173,12 +173,6 @@ public class TableManagerTest {
 
     HashMap<String, TableMetadata> tables = tableManager.listTables();
 
-    // print
-    TableMetadata tbm = tables.get(WorksForTableName);
-    assertEquals(tbm.getPrimaryKeys().toArray(new String[tbm.getPrimaryKeys().size()]), WorksForTablePKAttributes);
-    //assertEquals(tbm.getAttributes().key, WorksForTableAttributeNames);
-    //tbm.getA
-
     assertEquals(3, tables.size());
     assertEquals(EmployeeTable, tables.get(EmployeeTableName));
     assertEquals(DepartmentTable, tables.get(DepartmentTableName));
