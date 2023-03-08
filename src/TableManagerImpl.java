@@ -343,7 +343,7 @@ public class TableManagerImpl implements TableManager{
 
     tx.set(metaDir.pack(keyTuple), valueTuple.pack());
 
-
+    tx.commit().join();
 
     // check table
     /*if (value == null)
@@ -420,6 +420,15 @@ public class TableManagerImpl implements TableManager{
     // loop over all tables and clear range
     Transaction tx = db.createTransaction();
     tx.clear(rootDir.range());
+    // remove directories
+    List<String> tableNames = rootDir.list(db).join();
+
+    for (String name : tableNames)
+    {
+      DirectorySubspace tableDir = rootDir.open(db, PathUtil.from(name)).join();
+      tableDir.remove(db);
+    }
+
     tx.commit().join();
 
     return StatusCode.SUCCESS;
