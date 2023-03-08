@@ -411,13 +411,27 @@ public class TableManagerImpl implements TableManager{
 
   @Override
   public StatusCode dropAllTables() {
+//    // clear all inner tables
+//    for (Map.Entry<String, TableMetadata> entry: tables.entrySet()){
+//      deleteTable(entry.getKey());
+//    }
+//
+//    tables.clear();
+    // loop over all tables and clear range
+
     // remove directories
-    List<String> tableNames = rootDir.list(db).join();
+/*    List<String> tableNames = rootDir.list(db).join();
 
     for (String name : tableNames)
     {
       deleteTable(name);
-    }
+
+
+    }*/
+
+    Transaction tx = db.createTransaction();
+    tx.clear(rootDir.range());
+    tx.commit().join();
 
     return StatusCode.SUCCESS;
   }
