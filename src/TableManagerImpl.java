@@ -26,7 +26,6 @@ public class TableManagerImpl implements TableManager{
   private Database db;
   private DirectorySubspace rootDir;
   private DirectorySubspace meta;
-
   private DirectorySubspace raw;
 
   // constructor for class
@@ -54,6 +53,30 @@ public class TableManagerImpl implements TableManager{
     } catch (Exception e) {
       System.out.println("ERROR: root dir not made: " + e);
     }
+  }
+  // helper functions
+  public boolean checkTableExists(String tableName)
+  {
+    try {
+      List<String> tableNames = rootDir.list(db).join();
+      boolean found = false;
+
+      for (String name : tableNames)
+      {
+        if (tableName.equals(name))
+        {
+          found = true;
+          break;
+        }
+      }
+      return found;
+    }
+    catch (Exception e)
+    {
+      System.out.println("Error when finding table!: " + e);
+    }
+
+    return false;
   }
 
   public static void addAttributeValuePairToTable(Transaction tx, DirectorySubspace table,
@@ -152,20 +175,8 @@ public class TableManagerImpl implements TableManager{
   @Override
   public StatusCode deleteTable(String tableName) {
     System.out.println("Printing remaining keys: " + listTables().size());
-      // TODO: add check
-      // get list of existing tables
-     List<String> tableNames = rootDir.list(db).join();
-     boolean found = false;
-     for (String name : tableNames)
-     {
-       if (tableName.equals(name))
-       {
-         found = true;
-         break;
-       }
-     }
 
-     if (!found)
+     if (checkTableExists(tableName))
        return StatusCode.TABLE_NOT_FOUND;
 
      // start deleting
@@ -279,7 +290,34 @@ public class TableManagerImpl implements TableManager{
   public StatusCode addAttribute(String tableName, String attributeName, AttributeType attributeType) {
 
     System.out.println("Running addAttribute");
-    TableMetadata value = tables.get(tableName);
+    // check if table exists
+    List<String> tableNames = rootDir.list(db).join();
+    boolean found = false;
+    for (String name : tableNames)
+    {
+      if (tableName.equals(name))
+      {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found)
+      return StatusCode.TABLE_NOT_FOUND;
+
+    // start adding attribute, idea is get current one, make a copy, update copy, clear old one, add new one
+    //final DirectorySubspace tableDir = rootDir.open(db, PathUtil.from(tableName)).join();
+
+    List<String> path = new ArrayList<>();
+    path.add(tableName);
+    path.add("meta");
+    DirectorySubspace metaDir = rootDir.open(db, path).join();
+
+    Transaction tx = db.createTransaction();
+    Tuple keyTuple = Tuple.fromBytes(metaDir.getKey());
+    //Tuple
+
+
     // check table
     /*if (value == null)
     {
