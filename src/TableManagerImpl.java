@@ -289,6 +289,7 @@ public class TableManagerImpl implements TableManager{
 
         // make TableMetadata object
         TableMetadata tbm = new TableMetadata(attrNameArr, attrTypeArr, primKeyAttrNamesArr);
+        System.out.println(tbm);
         result.put(tableStr, tbm);
       }
       //System.out.println()
