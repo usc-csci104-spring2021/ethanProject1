@@ -37,6 +37,7 @@ public class TableManagerImpl implements TableManager{
     // open database
     try {
       db = fdb.open();
+
       System.out.println("Database opened!");
     } catch (Exception e) {
       System.out.println("ERROR: the database not successfully opened: " + e);
@@ -96,7 +97,7 @@ public class TableManagerImpl implements TableManager{
                          String[] primaryKeyAttributeNames) {
 
     // TODO: check parameters before doing anything with database
-    System.out.println("Running createTable test");
+    // System.out.println("Running createTable test");
 
     if (attributeNames == null || attributeType == null)
     {
@@ -141,7 +142,7 @@ public class TableManagerImpl implements TableManager{
     meta = tableDir.createOrOpen(db, PathUtil.from("meta")).join();
     raw = tableDir.createOrOpen(db, PathUtil.from("raw")).join();
 
-    int transactionCount = 5;
+    int transactionCount = 3;
     Transaction tx = db.createTransaction();
     //completeKey = completeKey.add(0).add(primaryKeyAttributeNames[0]);
     for (int i = 0; i < attributeNames.length; i++)
@@ -152,7 +153,7 @@ public class TableManagerImpl implements TableManager{
         tx.commit().join();
         tx.close();
         tx = db.createTransaction();
-        transactionCount = 5;
+        transactionCount = 3;
       }
 
       Tuple keyTuple = new Tuple();
@@ -177,7 +178,7 @@ public class TableManagerImpl implements TableManager{
       transactionCount--;
     }
 
-    System.out.println(tableName + " table created successfully!");
+    //System.out.println(tableName + " table created successfully!");
 
     // commit transaction
     tx.commit().join();
@@ -188,8 +189,6 @@ public class TableManagerImpl implements TableManager{
 
   @Override
   public StatusCode deleteTable(String tableName) {
-    System.out.println("Printing remaining keys: " + listTables().size());
-
     // check if table exists
     List<String> tableNames = rootDir.list(db).join();
     boolean found = false;
@@ -207,25 +206,17 @@ public class TableManagerImpl implements TableManager{
       return StatusCode.TABLE_NOT_FOUND;
 
      // start deleting
-     final DirectorySubspace tableDir = rootDir.open(db, PathUtil.from(tableName)).join();
+    final DirectorySubspace tableDir = rootDir.open(db, PathUtil.from(tableName)).join();
 
     Range r = tableDir.range();
 
-    System.out.println("Running deleteTable");
+    // System.out.println("Running deleteTable");
     Transaction tx = db.createTransaction();
     tx.clear(r);
-
     tx.commit().join();
 
     rootDir.remove(db, PathUtil.from(tableName)).join();
 
-/*    System.out.println("Printing remaining keys: " + listTables().size());
-    for (String key : listTables().keySet())
-    {
-      System.out.println(key);
-    }*/
-
-    System.out.println("Done with deleteTable");
     tx.close();
 
     return StatusCode.SUCCESS;
@@ -244,7 +235,7 @@ public class TableManagerImpl implements TableManager{
 
     for (String tableStr : tableDirs)
     {
-      System.out.println("Table: " + tableStr);
+      // System.out.println("Table: " + tableStr);
 
       // initialize TableMetaData properties, to be converted to arrays later
       List<String> attributeNames = new ArrayList<>();
@@ -310,14 +301,14 @@ public class TableManagerImpl implements TableManager{
 
         // make TableMetadata object
         TableMetadata tbm = new TableMetadata(attrNameArr, attrTypeArr, primKeyAttrNamesArr);
-        System.out.println(tbm);
+        //System.out.println(tbm);
         result.put(tableStr, tbm);
       }
       //System.out.println()
 
     }
 
-    System.out.println("Done with ListTables, size: " + result.size());
+    // System.out.println("Done with ListTables, size: " + result.size());
 
     tx.close();
 
@@ -398,7 +389,7 @@ public class TableManagerImpl implements TableManager{
   @Override
   public StatusCode dropAttribute(String tableName, String attributeName) {
 
-    System.out.println("Running dropAttribute");
+    // System.out.println("Running dropAttribute");
     // check if table exists
     List<String> tableNames = rootDir.list(db).join();
     boolean found = false;
@@ -444,7 +435,7 @@ public class TableManagerImpl implements TableManager{
         return StatusCode.ATTRIBUTE_NOT_FOUND;
       // List<String> key = rootDir.list(db).join();
 
-      System.out.println("Done with dropAttribute");
+      //System.out.println("Done with dropAttribute");
       return StatusCode.SUCCESS;
     //}
   }
