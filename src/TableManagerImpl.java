@@ -246,15 +246,19 @@ public class TableManagerImpl implements TableManager{
         }
 
       }
-      // convert to arrays
-      String[] attrNameArr = attributeNames.toArray(new String[attributeNames.size()]);
-      AttributeType[] attrTypeArr = attributeTypes.toArray(new AttributeType[attributeTypes.size()]);
-      String[] primKeyAttrNamesArr = primaryKeyAttributeNames.toArray(new String[primaryKeyAttributeNames.size()]);
+      if (!attributeNames.isEmpty() && !attributeNames.isEmpty() && !primaryKeyAttributeNames.isEmpty())
+      {
+        // convert to arrays
+        String[] attrNameArr = attributeNames.toArray(new String[attributeNames.size()]);
+        AttributeType[] attrTypeArr = attributeTypes.toArray(new AttributeType[attributeTypes.size()]);
+        String[] primKeyAttrNamesArr = primaryKeyAttributeNames.toArray(new String[primaryKeyAttributeNames.size()]);
 
 
-      // make TableMetadata object
-      TableMetadata tbm = new TableMetadata(attrNameArr, attrTypeArr, primKeyAttrNamesArr);
-      result.put(tableStr, tbm);
+        // make TableMetadata object
+
+        TableMetadata tbm = new TableMetadata(attrNameArr, attrTypeArr, primKeyAttrNamesArr);
+        result.put(tableStr, tbm);
+      }
 
     }
 
