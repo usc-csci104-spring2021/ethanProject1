@@ -251,10 +251,8 @@ public class TableManagerImpl implements TableManager{
       // iterate over key-value pairs in this range and make TableMetadata object from it
       List<KeyValue> keyValues = tx.getRange(r).asList().join();
 
-      int count = 0;
       for (KeyValue kv : keyValues)
       {
-        if (count > 0)
         {
           // use Tuple api to transform bytes to key and value tuples
           Tuple keyTuple = Tuple.fromBytes(kv.getKey());
@@ -280,8 +278,8 @@ public class TableManagerImpl implements TableManager{
 
           System.out.println("val obj 0: " + valueItems.get(0));
         }
-        count++;
       }
+
       if (!attributeNames.isEmpty() && !attributeNames.isEmpty() && !primaryKeyAttributeNames.isEmpty())
       {
         // convert to arrays
