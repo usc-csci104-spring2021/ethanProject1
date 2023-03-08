@@ -402,14 +402,13 @@ public class TableManagerImpl implements TableManager{
     // loop over all tables and clear range
 
     // remove directories
-/*    List<String> tableNames = rootDir.list(db).join();
+   List<String> tableNames = rootDir.list(db).join();
 
     for (String name : tableNames)
     {
-      deleteTable(name);
-
-
-    }*/
+      rootDir.remove(db, PathUtil.from(name)).join();
+      //deleteTable(name);
+    }
 
     Transaction tx = db.createTransaction();
     tx.clear(rootDir.range());
