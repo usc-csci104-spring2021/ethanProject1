@@ -286,13 +286,15 @@ public class TableManagerImpl implements TableManager{
         String[] attrNameArr = attributeNames.toArray(new String[attributeNames.size()]);
         AttributeType[] attrTypeArr = attributeTypes.toArray(new AttributeType[attributeTypes.size()]);
 
+        // add in reverse order
         String[] primKeyAttrNamesArr = new String[primaryKeyAttributeNames.size()];
-        System.out.println("size of primary: " + primaryKeyAttributeNames.size());
-        for (int i = 0; i < primKeyAttrNamesArr.length; i++)
+        int bigness = primaryKeyAttributeNames.size();
+        for (int i = 0; i < bigness; i++)
         {
-          primKeyAttrNamesArr[i] = primaryKeyAttributeNames.get(i);
+          primKeyAttrNamesArr[0] = primaryKeyAttributeNames.get(bigness - 1 - i);
         }
                 //primaryKeyAttributeNames.toArray(new String[primaryKeyAttributeNames.size()]);
+        //
 
         // make TableMetadata object
         TableMetadata tbm = new TableMetadata(attrNameArr, attrTypeArr, primKeyAttrNamesArr);
