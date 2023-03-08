@@ -55,7 +55,7 @@ public class TableManagerImpl implements TableManager{
     }
   }
   // helper functions
-  public boolean checkTableExists(String tableName)
+  public boolean tableExists(String tableName)
   {
     try {
       List<String> tableNames = rootDir.list(db).join();
@@ -176,7 +176,7 @@ public class TableManagerImpl implements TableManager{
   public StatusCode deleteTable(String tableName) {
     System.out.println("Printing remaining keys: " + listTables().size());
 
-     if (checkTableExists(tableName))
+     if (!tableExists(tableName))
        return StatusCode.TABLE_NOT_FOUND;
 
      // start deleting
@@ -293,6 +293,7 @@ public class TableManagerImpl implements TableManager{
     // check if table exists
     List<String> tableNames = rootDir.list(db).join();
     boolean found = false;
+
     for (String name : tableNames)
     {
       if (tableName.equals(name))
