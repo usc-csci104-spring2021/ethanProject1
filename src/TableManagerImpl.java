@@ -141,10 +141,20 @@ public class TableManagerImpl implements TableManager{
     meta = tableDir.createOrOpen(db, PathUtil.from("meta")).join();
     raw = tableDir.createOrOpen(db, PathUtil.from("raw")).join();
 
+    int transactionCount = 5;
     Transaction tx = db.createTransaction();
     //completeKey = completeKey.add(0).add(primaryKeyAttributeNames[0]);
     for (int i = 0; i < attributeNames.length; i++)
     {
+      // resets transaction
+      if (transactionCount <= 0)
+      {
+        tx.commit().join();
+        tx.close();
+        tx = db.createTransaction();
+        transactionCount = 5;
+      }
+
       Tuple keyTuple = new Tuple();
       keyTuple = keyTuple.add(attributeNames[i]);
       keyTuple = keyTuple.add(attributeType[i].name());
@@ -163,6 +173,8 @@ public class TableManagerImpl implements TableManager{
       valueTuple = valueTuple.add(found);
 
       tx.set(meta.pack(keyTuple), valueTuple.pack());
+
+      transactionCount--;
     }
 
     System.out.println(tableName + " table created successfully!");
@@ -264,19 +276,19 @@ public class TableManagerImpl implements TableManager{
           attributeNames.add((String)keyItems.get(1));
           attributeTypes.add(AttributeType.valueOf((String) keyItems.get(2)));
 
-          System.out.println("attrName: " + keyItems.get(1));
-          System.out.println("value tuple size: " + valueItems.size());
+/*          System.out.println("attrName: " + keyItems.get(1));
+          System.out.println("value tuple size: " + valueItems.size());*/
           // check if primary key attribute
           if ((Boolean) valueItems.get(0))
           {
             primaryKeyAttributeNames.add((String)keyItems.get(1));
           }
 
-          System.out.println("printing key obj 0: " + keyItems.get(0));
+/*          System.out.println("printing key obj 0: " + keyItems.get(0));
           System.out.println("printing key obj 1: " + keyItems.get(1));
           System.out.println("printing key obj 2: " + keyItems.get(2));
 
-          System.out.println("val obj 0: " + valueItems.get(0));
+          System.out.println("val obj 0: " + valueItems.get(0));*/
         }
       }
 
@@ -315,7 +327,7 @@ public class TableManagerImpl implements TableManager{
   @Override
   public StatusCode addAttribute(String tableName, String attributeName, AttributeType attributeType) {
 
-    System.out.println("Running addAttribute");
+    //System.out.println("Running addAttribute");
     // check if table exists
     List<String> tableNames = rootDir.list(db).join();
     boolean found = false;
@@ -332,13 +344,34 @@ public class TableManagerImpl implements TableManager{
     if (!found)
       return StatusCode.TABLE_NOT_FOUND;
 
-    // start adding attribute, idea is get current one, make a copy, update copy, clear old one, add new one
-    //final DirectorySubspace tableDir = rootDir.open(db, PathUtil.from(tableName)).join();
 
+    // check if attribute already exists
     List<String> path = new ArrayList<>();
     path.add(tableName);
     path.add("meta");
     DirectorySubspace metaDir = rootDir.open(db, path).join();
+
+    Transaction trans = db.createTransaction();
+    List<KeyValue> keyValues = trans.getRange(metaDir.range()).asList().join();
+
+    boolean foundAttribute = false;
+    for (KeyValue kv : keyValues)
+    {
+      Tuple keyTuple = Tuple.fromBytes(kv.getKey());
+      List<Object> keyItems = keyTuple.getItems();
+
+      String name = (String)keyItems.get(1);
+      if (name.equals(attributeName))
+      {
+        foundAttribute = true;
+        break;
+      }
+    }
+
+    if (foundAttribute)
+      return StatusCode.ATTRIBUTE_ALREADY_EXISTS;
+
+    // add attribute if not found
 
     Transaction tx = db.createTransaction();
 
@@ -358,45 +391,59 @@ public class TableManagerImpl implements TableManager{
     tx.commit().join();
     tx.close();
 
-    System.out.println("Done with addAttribute");
+    //System.out.println("Done with addAttribute");
     return StatusCode.SUCCESS;
   }
 
   @Override
   public StatusCode dropAttribute(String tableName, String attributeName) {
+
     System.out.println("Running dropAttribute");
-//    TableMetadata value = tables.get(tableName);
-//    // check if table exists
-//    if (value == null)
-//    {
-//      return StatusCode.TABLE_NOT_FOUND;
-//    }
-//    // check attribute name/type
-//    if (attributeName == "")
-//    {
-//      return StatusCode.TABLE_CREATION_ATTRIBUTE_INVALID;
-//    }
-//    // attribute already exists
-//    HashMap<String, AttributeType> attributes = value.getAttributes();
-//    if (attributes.containsKey(attributeName))
-//    {
-//      return StatusCode.ATTRIBUTE_NOT_FOUND;
-//    }
-//    else
-//    {
-//      // remove from db
-//      try(Database db = fdb.open()) {
-//        Transaction transaction = db.createTransaction();
-//        Tuple tuple = Tuple.from(tableName);
-//        transaction.clear(tuple.range());
-//        transaction.commit();
-//      }
-//      catch (Exception e)
-//      {
-//        System.out.println(e);
-//      }
-//      // remove from local
-//      attributes.remove(attributeName);
+    // check if table exists
+    List<String> tableNames = rootDir.list(db).join();
+    boolean found = false;
+
+    for (String name : tableNames)
+    {
+      if (tableName.equals(name))
+      {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found)
+      return StatusCode.TABLE_NOT_FOUND;
+
+      // begin dropping attribute
+      Transaction tx = db.createTransaction();
+
+      List<String> path = new ArrayList<>();
+      path.add(tableName);
+      path.add("meta");
+      DirectorySubspace metaDir = rootDir.open(db, path).join();
+
+      List<KeyValue> keyValues = tx.getRange(metaDir.range()).asList().join();
+
+      boolean foundAttribute = false;
+      for (KeyValue kv : keyValues)
+      {
+        Tuple keyTuple = Tuple.fromBytes(kv.getKey());
+        List<Object> keyItems = keyTuple.getItems();
+        // List<Object> valueItems = valueTuple.getItems();
+        String name = (String)keyItems.get(1);
+        if (name.equals(attributeName))
+        {
+          // clear found attribute
+          tx.clear(kv.getKey());
+          foundAttribute = true;
+        }
+      }
+
+      if (!foundAttribute)
+        return StatusCode.ATTRIBUTE_NOT_FOUND;
+      // List<String> key = rootDir.list(db).join();
+
       System.out.println("Done with dropAttribute");
       return StatusCode.SUCCESS;
     //}
@@ -404,14 +451,6 @@ public class TableManagerImpl implements TableManager{
 
   @Override
   public StatusCode dropAllTables() {
-//    // clear all inner tables
-//    for (Map.Entry<String, TableMetadata> entry: tables.entrySet()){
-//      deleteTable(entry.getKey());
-//    }
-//
-//    tables.clear();
-    // loop over all tables and clear range
-
     // remove directories
    List<String> tableNames = rootDir.list(db).join();
 
@@ -421,6 +460,7 @@ public class TableManagerImpl implements TableManager{
       //deleteTable(name);
     }
 
+    // clear keys
     Transaction tx = db.createTransaction();
     tx.clear(rootDir.range());
     tx.commit().join();
