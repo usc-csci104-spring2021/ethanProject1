@@ -291,7 +291,7 @@ public class TableManagerImpl implements TableManager{
         int bigness = primaryKeyAttributeNames.size();
         for (int i = 0; i < bigness; i++)
         {
-          primKeyAttrNamesArr[0] = primaryKeyAttributeNames.get(bigness - 1 - i);
+          primKeyAttrNamesArr[i] = primaryKeyAttributeNames.get(bigness - 1 - i);
         }
                 //primaryKeyAttributeNames.toArray(new String[primaryKeyAttributeNames.size()]);
         //
