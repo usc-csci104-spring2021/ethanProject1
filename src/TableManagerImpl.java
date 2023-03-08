@@ -161,12 +161,11 @@ public class TableManagerImpl implements TableManager{
 
       Tuple valueTuple = new Tuple();
       valueTuple = valueTuple.add(found);
+
       tx.set(meta.pack(keyTuple), valueTuple.pack());
     }
 
-    //meta = Subspace()
     System.out.println(tableName + " table created successfully!");
-    System.out.println("createTable Test done");
 
     // commit transaction
     tx.commit().join();
@@ -270,16 +269,20 @@ public class TableManagerImpl implements TableManager{
         {
           primaryKeyAttributeNames.add((String)keyItems.get(1));
         }
+        System.out.println("printing key obj 0: " + keyItems.get(0));
+        System.out.println("printing key obj 1: " + keyItems.get(1));
+        System.out.println("printing key obj 2: " + keyItems.get(2));
 
-//        for (Object obj : keyTuple.getItems())
-//        {
-//          System.out.println("printing key objs: " + obj);
-//        }
-//
-//        for (Object obj : valueTuple.getItems())
-//        {
-//          System.out.println("printing value objs: " + obj);
-//        }
+        System.out.println("val obj 0: " + valueItems.get(0));
+       /* for (Object obj : keyTuple.getItems())
+        {
+          System.out.println("printing key obj 0: " + keyItems.get(1));
+        }
+
+        for (Object obj : valueTuple.getItems())
+        {
+          System.out.println("printing value objs: " + obj);
+        }*/
 
       }
       if (!attributeNames.isEmpty() && !attributeNames.isEmpty() && !primaryKeyAttributeNames.isEmpty())
