@@ -291,10 +291,11 @@ public class TableManagerImpl implements TableManager{
         TableMetadata tbm = new TableMetadata(attrNameArr, attrTypeArr, primKeyAttrNamesArr);
         result.put(tableStr, tbm);
       }
+      //System.out.println()
 
     }
 
-    System.out.println("Done with ListTables");
+    System.out.println("Done with ListTables, size: " + result.size());
 
     tx.close();
 
