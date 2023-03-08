@@ -205,7 +205,7 @@ public class TableManagerImpl implements TableManager{
 
     tx.commit().join();
 
-    rootDir.remove(db, PathUtil.from(tableName));
+    rootDir.remove(db, PathUtil.from(tableName)).join();
 
 /*    System.out.println("Printing remaining keys: " + listTables().size());
     for (String key : listTables().keySet())
