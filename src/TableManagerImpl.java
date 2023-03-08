@@ -165,6 +165,7 @@ public class TableManagerImpl implements TableManager{
       System.out.println("Running deleteTable");
       Transaction tx = db.createTransaction();
       tx.clear(r);
+      tx.commit().join();
 
     System.out.println("Done with deleteTable");
     return StatusCode.SUCCESS;
@@ -333,6 +334,7 @@ public class TableManagerImpl implements TableManager{
     // loop over all tables and clear range
     Transaction tx = db.createTransaction();
     tx.clear(rootDir.range());
+    tx.commit().join();
 
     return StatusCode.SUCCESS;
   }
