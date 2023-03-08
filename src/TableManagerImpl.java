@@ -9,6 +9,7 @@ import com.apple.foundationdb.tuple.Tuple;
 import jdk.net.SocketFlow;
 import org.w3c.dom.Attr;
 
+import java.security.Key;
 import java.sql.Array;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -157,6 +158,7 @@ public class TableManagerImpl implements TableManager{
           break;
         }
       }
+
       Tuple valueTuple = new Tuple();
       valueTuple = valueTuple.add(found);
       tx.set(meta.pack(keyTuple), valueTuple.pack());
@@ -328,8 +330,19 @@ public class TableManagerImpl implements TableManager{
     DirectorySubspace metaDir = rootDir.open(db, path).join();
 
     Transaction tx = db.createTransaction();
-    Tuple keyTuple = Tuple.fromBytes(metaDir.getKey());
-    //Tuple
+
+    // key tuples
+    Tuple keyTuple = new Tuple();
+    Tuple valueTuple = new Tuple();
+
+    keyTuple = keyTuple.add(attributeName);
+    keyTuple = keyTuple.add(attributeType.name());
+
+    // assumes added one cannot be primaryKey
+    valueTuple.add(false);
+
+    tx.set(metaDir.pack(keyTuple), valueTuple.pack());
+
 
 
     // check table
