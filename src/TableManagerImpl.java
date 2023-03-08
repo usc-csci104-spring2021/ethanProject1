@@ -81,16 +81,6 @@ public class TableManagerImpl implements TableManager{
     return false;
   }
 
-  public static void addAttributeValuePairToTable(Transaction tx, DirectorySubspace table,
-                                                  int primaryKey, String attributeName, Object attributeValue) {
-    Tuple keyTuple = new Tuple();
-    keyTuple = keyTuple.add(primaryKey).add(attributeName);
-
-    Tuple valueTuple = new Tuple();
-    valueTuple = valueTuple.addObject(attributeValue);
-    tx.set(table.pack(keyTuple), valueTuple.pack());
-  }
-
   // primaryKeyAttributeNames is subset of attributeNames
   @Override
   public StatusCode createTable(String tableName, String[] attributeNames, AttributeType[] attributeType,
@@ -103,11 +93,35 @@ public class TableManagerImpl implements TableManager{
     if (primaryKeyAttributeNames == null)
       return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
 
+    // check for valid primaryKeys and check if they're in attributeNames
+    if (primaryKeyAttributeNames.length > 0)
+    {
+      for (String key : primaryKeyAttributeNames)
+      {
+        if (key == "")
+          return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
+
+        boolean found = false;
+        for (String name : attributeNames){
+          if (name.equals(key)){
+            found = true;
+            break;
+          }
+        }
+        if (!found)
+          return StatusCode.TABLE_CREATION_PRIMARY_KEY_NOT_FOUND;
+      }
+
+    }
+    else
+      return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
+
     // check for valid attributes
     if (attributeNames.length != attributeType.length)
     {
       return StatusCode.TABLE_CREATION_ATTRIBUTE_INVALID;
     }
+
 
     // create table
     final DirectorySubspace tableDir = rootDir.createOrOpen(db, PathUtil.from(tableName)).join();
@@ -350,8 +364,6 @@ public class TableManagerImpl implements TableManager{
 
   @Override
   public StatusCode dropAttribute(String tableName, String attributeName) {
-
-    // System.out.println("Running dropAttribute");
     // check if table exists
     List<String> tableNames = rootDir.list(db).join();
     boolean found = false;
@@ -383,23 +395,23 @@ public class TableManagerImpl implements TableManager{
       {
         Tuple keyTuple = Tuple.fromBytes(kv.getKey());
         List<Object> keyItems = keyTuple.getItems();
-        // List<Object> valueItems = valueTuple.getItems();
         String name = (String)keyItems.get(1);
+
         if (name.equals(attributeName))
         {
           // clear found attribute
           tx.clear(kv.getKey());
           foundAttribute = true;
+          break;
         }
       }
 
       if (!foundAttribute)
         return StatusCode.ATTRIBUTE_NOT_FOUND;
-      // List<String> key = rootDir.list(db).join();
 
-      //System.out.println("Done with dropAttribute");
+      tx.close();
+
       return StatusCode.SUCCESS;
-    //}
   }
 
   @Override
@@ -410,7 +422,6 @@ public class TableManagerImpl implements TableManager{
     for (String name : tableNames)
     {
       rootDir.remove(db, PathUtil.from(name)).join();
-      //deleteTable(name);
     }
 
     // clear keys
