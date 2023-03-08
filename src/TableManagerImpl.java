@@ -151,25 +151,21 @@ public class TableManagerImpl implements TableManager{
 
   @Override
   public StatusCode deleteTable(String tableName) {
-//    // check if table exists
+      // TODO: add checks
+      final DirectorySubspace tableDir = rootDir.open(db, PathUtil.from(tableName)).join();
+
+      Range r = tableDir.range();
+//      List<String> subDirs = tableDir.list(db).join();
+//
+//      for (String subDirname : subDirs)
+//      {
+//
+//      }
+
       System.out.println("Running deleteTable");
-//    if (!tables.containsKey(tableName))
-//    {
-//      return StatusCode.TABLE_NOT_FOUND;
-//    }
-//    // connect to db to do so
-//    try(Database db = fdb.open()) {
-//      Transaction transaction = db.createTransaction();
-//      Tuple tuple = Tuple.from(tableName);
-//      transaction.clear(tuple.range());
-//      transaction.commit();
-//    }
-//    catch (Exception e)
-//    {
-//      System.out.println(e);
-//    }
-//    // from local hashmap
-//    tables.remove(tableName);
+      Transaction tx = db.createTransaction();
+      tx.clear(r);
+
     System.out.println("Done with deleteTable");
     return StatusCode.SUCCESS;
 
@@ -334,6 +330,9 @@ public class TableManagerImpl implements TableManager{
 //    }
 //
 //    tables.clear();
+    // loop over all tables and clear range
+    Transaction tx = db.createTransaction();
+    tx.clear(rootDir.range());
 
     return StatusCode.SUCCESS;
   }
