@@ -151,16 +151,26 @@ public class TableManagerImpl implements TableManager{
 
   @Override
   public StatusCode deleteTable(String tableName) {
-      // TODO: add checks
-      final DirectorySubspace tableDir = rootDir.open(db, PathUtil.from(tableName)).join();
+      // TODO: add check
+      // get list of existing tables
+     List<String> tableNames = rootDir.list(db).join();
+     boolean found = false;
+     for (String name : tableNames)
+     {
+       if (tableName.equals(name))
+       {
+         found = true;
+         break;
+       }
+     }
+
+     if (!found)
+       return StatusCode.TABLE_NOT_FOUND;
+
+     final DirectorySubspace tableDir = rootDir.open(db, PathUtil.from(tableName)).join();
 
       Range r = tableDir.range();
-//      List<String> subDirs = tableDir.list(db).join();
-//
-//      for (String subDirname : subDirs)
-//      {
-//
-//      }
+
 
       System.out.println("Running deleteTable");
       Transaction tx = db.createTransaction();
