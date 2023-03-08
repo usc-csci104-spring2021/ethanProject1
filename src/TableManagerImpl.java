@@ -96,37 +96,11 @@ public class TableManagerImpl implements TableManager{
   public StatusCode createTable(String tableName, String[] attributeNames, AttributeType[] attributeType,
                          String[] primaryKeyAttributeNames) {
 
-    // TODO: check parameters before doing anything with database
-    // System.out.println("Running createTable test");
-
     if (attributeNames == null || attributeType == null)
     {
       return StatusCode.TABLE_CREATION_ATTRIBUTE_INVALID;
     }
     if (primaryKeyAttributeNames == null)
-      return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
-
-    // check for valid primaryKeys and check if they're in attributeNames
-  if (primaryKeyAttributeNames.length > 0)
-    {
-      for (String key : primaryKeyAttributeNames)
-      {
-        if (key == "")
-          return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
-
-        boolean found = false;
-        for (String name : attributeNames){
-          if (name.equals(key)){
-            found = true;
-            break;
-          }
-        }
-        if (!found)
-          return StatusCode.TABLE_CREATION_PRIMARY_KEY_NOT_FOUND;
-      }
-
-    }
-    else
       return StatusCode.TABLE_CREATION_NO_PRIMARY_KEY;
 
     // check for valid attributes
@@ -264,22 +238,18 @@ public class TableManagerImpl implements TableManager{
           List<Object> keyItems = keyTuple.getItems();
           List<Object> valueItems = valueTuple.getItems();
 
-          attributeNames.add((String)keyItems.get(1));
-          attributeTypes.add(AttributeType.valueOf((String) keyItems.get(2)));
+          if (!keyItems.get(1).equals(""))
+          {
+            attributeNames.add((String)keyItems.get(1));
+            attributeTypes.add(AttributeType.valueOf((String) keyItems.get(2)));
+          }
 
-/*          System.out.println("attrName: " + keyItems.get(1));
-          System.out.println("value tuple size: " + valueItems.size());*/
           // check if primary key attribute
           if ((Boolean) valueItems.get(0))
           {
             primaryKeyAttributeNames.add((String)keyItems.get(1));
           }
 
-/*          System.out.println("printing key obj 0: " + keyItems.get(0));
-          System.out.println("printing key obj 1: " + keyItems.get(1));
-          System.out.println("printing key obj 2: " + keyItems.get(2));
-
-          System.out.println("val obj 0: " + valueItems.get(0));*/
         }
       }
 
@@ -296,19 +266,13 @@ public class TableManagerImpl implements TableManager{
         {
           primKeyAttrNamesArr[i] = primaryKeyAttributeNames.get(bigness - 1 - i);
         }
-                //primaryKeyAttributeNames.toArray(new String[primaryKeyAttributeNames.size()]);
-        //
 
         // make TableMetadata object
         TableMetadata tbm = new TableMetadata(attrNameArr, attrTypeArr, primKeyAttrNamesArr);
-        //System.out.println(tbm);
+
         result.put(tableStr, tbm);
       }
-      //System.out.println()
-
     }
-
-    // System.out.println("Done with ListTables, size: " + result.size());
 
     tx.close();
 
@@ -317,8 +281,6 @@ public class TableManagerImpl implements TableManager{
 
   @Override
   public StatusCode addAttribute(String tableName, String attributeName, AttributeType attributeType) {
-
-    //System.out.println("Running addAttribute");
     // check if table exists
     List<String> tableNames = rootDir.list(db).join();
     boolean found = false;
