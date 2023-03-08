@@ -179,6 +179,8 @@ public class TableManagerImpl implements TableManager{
 
       tx.commit().join();
 
+      tableDir.remove(db);
+
     System.out.println("Printing remaining keys: " + listTables().size());
     for (String key : listTables().keySet())
     {
