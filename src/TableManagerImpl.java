@@ -185,7 +185,6 @@ public class TableManagerImpl implements TableManager{
     // List all subdirectories under root ("tables"), these are the individual tables
     List<String> tableDirs = rootDir.list(db).join();
 
-
     for (String tableStr : tableDirs)
     {
       System.out.println("Table: " + tableStr);
@@ -214,8 +213,9 @@ public class TableManagerImpl implements TableManager{
         Tuple keyTuple = Tuple.fromBytes(kv.getKey());
         Tuple valueTuple = Tuple.fromBytes(kv.getValue());
 
-        // structure (tableName, tableValue)
-        //System.out.println("attribute name:" + (String)keyTuple.get(0));
+        // structure (tableName, tableValue) what is this?
+        System.out.println("attribute name:" + (String)keyTuple.get(0));
+
         List<Object> keyItems = keyTuple.getItems();
         List<Object> valueItems = valueTuple.getItems();
 
