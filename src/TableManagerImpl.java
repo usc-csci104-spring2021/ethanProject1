@@ -269,16 +269,31 @@ public class TableManagerImpl implements TableManager{
 
       if (!attributeNames.isEmpty() && !attributeNames.isEmpty() && !primaryKeyAttributeNames.isEmpty())
       {
-        // convert to arrays
-        String[] attrNameArr = attributeNames.toArray(new String[attributeNames.size()]);
-        AttributeType[] attrTypeArr = attributeTypes.toArray(new AttributeType[attributeTypes.size()]);
+        // convert to arrays in reverse order
+        int namesSize = attributeNames.size();
+        String[] attrNameArr = new String[namesSize];
+
+        for (int i = 0; i < namesSize; i++)
+        {
+          attrNameArr[i] = primaryKeyAttributeNames.get(namesSize - 1 - i);
+        }
+
+        // types
+        int typeSize = attributeTypes.size();
+        AttributeType[] attrTypeArr = new AttributeType[typeSize];
+
+        for (int i = 0; i < typeSize; i++)
+        {
+          attrTypeArr[i] = attributeTypes.get(typeSize - 1 - i);
+        }
 
         // add in reverse order
-        String[] primKeyAttrNamesArr = new String[primaryKeyAttributeNames.size()];
-        int bigness = primaryKeyAttributeNames.size();
-        for (int i = 0; i < bigness; i++)
+        int pkSize = primaryKeyAttributeNames.size();
+        String[] primKeyAttrNamesArr = new String[pkSize];
+
+        for (int i = 0; i < pkSize; i++)
         {
-          primKeyAttrNamesArr[i] = primaryKeyAttributeNames.get(bigness - 1 - i);
+          primKeyAttrNamesArr[i] = primaryKeyAttributeNames.get(pkSize - 1 - i);
         }
 
         // make TableMetadata object
@@ -428,6 +443,8 @@ public class TableManagerImpl implements TableManager{
     Transaction tx = db.createTransaction();
     tx.clear(rootDir.range());
     tx.commit().join();
+
+    tx.close();
 
     return StatusCode.SUCCESS;
   }
