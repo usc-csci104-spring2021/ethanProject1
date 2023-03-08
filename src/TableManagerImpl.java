@@ -151,6 +151,7 @@ public class TableManagerImpl implements TableManager{
 
   @Override
   public StatusCode deleteTable(String tableName) {
+    System.out.println("Printing remaining keys: " + listTables().size());
       // TODO: add check
       // get list of existing tables
      List<String> tableNames = rootDir.list(db).join();
@@ -167,17 +168,18 @@ public class TableManagerImpl implements TableManager{
      if (!found)
        return StatusCode.TABLE_NOT_FOUND;
 
+     // start deleting
      final DirectorySubspace tableDir = rootDir.open(db, PathUtil.from(tableName)).join();
 
       Range r = tableDir.range();
 
-
       System.out.println("Running deleteTable");
       Transaction tx = db.createTransaction();
       tx.clear(r);
+
       tx.commit().join();
 
-    System.out.println("Printing remaining keys" + listTables().size());
+    System.out.println("Printing remaining keys: " + listTables().size());
     for (String key : listTables().keySet())
     {
       System.out.println(key);
@@ -222,7 +224,6 @@ public class TableManagerImpl implements TableManager{
 
       for (KeyValue kv : keyValues)
       {
-        // System.out.println("Entered");
         // use Tuple api to transform bytes to key and value tuples
         Tuple keyTuple = Tuple.fromBytes(kv.getKey());
         Tuple valueTuple = Tuple.fromBytes(kv.getValue());
@@ -260,9 +261,7 @@ public class TableManagerImpl implements TableManager{
         AttributeType[] attrTypeArr = attributeTypes.toArray(new AttributeType[attributeTypes.size()]);
         String[] primKeyAttrNamesArr = primaryKeyAttributeNames.toArray(new String[primaryKeyAttributeNames.size()]);
 
-
         // make TableMetadata object
-
         TableMetadata tbm = new TableMetadata(attrNameArr, attrTypeArr, primKeyAttrNamesArr);
         result.put(tableStr, tbm);
       }
@@ -270,7 +269,6 @@ public class TableManagerImpl implements TableManager{
     }
 
     System.out.println("Done with ListTables");
-
 
     return result;
   }
