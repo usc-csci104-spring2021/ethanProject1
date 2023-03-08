@@ -340,7 +340,7 @@ public class TableManagerImpl implements TableManager{
 
     // assumes added one cannot be primaryKey
     boolean var = false;
-    valueTuple.add(var);
+    valueTuple = valueTuple.add(var);
 
     tx.set(metaDir.pack(keyTuple), valueTuple.pack());
 
