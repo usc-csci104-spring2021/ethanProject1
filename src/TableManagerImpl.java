@@ -214,7 +214,7 @@ public class TableManagerImpl implements TableManager{
         Tuple valueTuple = Tuple.fromBytes(kv.getValue());
 
         // structure (tableName, tableValue) what is this?
-        System.out.println("attribute name:" + (String)keyTuple.get(0));
+        //System.out.println("attribute name:" + (String)keyTuple.get(0));
 
         List<Object> keyItems = keyTuple.getItems();
         List<Object> valueItems = valueTuple.getItems();
@@ -226,6 +226,11 @@ public class TableManagerImpl implements TableManager{
         if ((Boolean) valueItems.get(0))
         {
           primaryKeyAttributeNames.add((String)keyItems.get(1));
+        }
+
+        for (Object obj : keyTuple.getItems())
+        {
+          System.out.println("printing key objs: " + obj);
         }
 
         for (Object obj : valueTuple.getItems())
