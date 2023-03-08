@@ -270,30 +270,16 @@ public class TableManagerImpl implements TableManager{
       if (!attributeNames.isEmpty() && !attributeNames.isEmpty() && !primaryKeyAttributeNames.isEmpty())
       {
         // convert to arrays in reverse order
-        int namesSize = attributeNames.size();
-        String[] attrNameArr = new String[namesSize];
+        String[] attrNameArr = attributeNames.toArray(new String[attributeNames.size()]);
 
-        for (int i = 0; i < namesSize; i++)
-        {
-          attrNameArr[i] = primaryKeyAttributeNames.get(namesSize - 1 - i);
-        }
-
-        // types
-        int typeSize = attributeTypes.size();
-        AttributeType[] attrTypeArr = new AttributeType[typeSize];
-
-        for (int i = 0; i < typeSize; i++)
-        {
-          attrTypeArr[i] = attributeTypes.get(typeSize - 1 - i);
-        }
+        AttributeType[] attrTypeArr = attributeTypes.toArray(new AttributeType[attributeTypes.size()]);
 
         // add in reverse order
-        int pkSize = primaryKeyAttributeNames.size();
-        String[] primKeyAttrNamesArr = new String[pkSize];
-
-        for (int i = 0; i < pkSize; i++)
+        String[] primKeyAttrNamesArr = new String[primaryKeyAttributeNames.size()];
+        int bigness = primaryKeyAttributeNames.size();
+        for (int i = 0; i < bigness; i++)
         {
-          primKeyAttrNamesArr[i] = primaryKeyAttributeNames.get(pkSize - 1 - i);
+          primKeyAttrNamesArr[i] = primaryKeyAttributeNames.get(bigness - 1 - i);
         }
 
         // make TableMetadata object
@@ -353,6 +339,7 @@ public class TableManagerImpl implements TableManager{
     if (foundAttribute)
       return StatusCode.ATTRIBUTE_ALREADY_EXISTS;
 
+    trans.close();
     // add attribute if not found
 
     Transaction tx = db.createTransaction();
