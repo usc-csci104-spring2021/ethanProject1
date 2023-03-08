@@ -207,11 +207,11 @@ public class TableManagerImpl implements TableManager{
 
     tableDir.remove(db);
 
-    System.out.println("Printing remaining keys: " + listTables().size());
+/*    System.out.println("Printing remaining keys: " + listTables().size());
     for (String key : listTables().keySet())
     {
       System.out.println(key);
-    }
+    }*/
 
     System.out.println("Done with deleteTable");
     tx.close();
