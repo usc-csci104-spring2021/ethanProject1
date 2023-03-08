@@ -263,6 +263,7 @@ public class TableManagerImpl implements TableManager{
 
         attributeNames.add((String)keyItems.get(1));
         attributeTypes.add(AttributeType.valueOf((String) keyItems.get(2)));
+
         System.out.println("attrName: " + keyItems.get(1));
         System.out.println("value tuple size: " + valueItems.size());
         // check if primary key attribute
@@ -343,7 +344,8 @@ public class TableManagerImpl implements TableManager{
     keyTuple = keyTuple.add(attributeType.name());
 
     // assumes added one cannot be primaryKey
-    valueTuple.add(false);
+    boolean var = false;
+    valueTuple.add(var);
 
     tx.set(metaDir.pack(keyTuple), valueTuple.pack());
 
