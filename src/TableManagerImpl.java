@@ -178,6 +178,12 @@ public class TableManagerImpl implements TableManager{
       tx.commit().join();
 
     System.out.println("Done with deleteTable");
+    System.out.println("Printing remaining keys" + listTables().size());
+    for (String key : listTables().keySet())
+    {
+      System.out.println(key);
+    }
+
     return StatusCode.SUCCESS;
 
   }
