@@ -169,6 +169,7 @@ public class TableManagerImpl implements TableManager{
 
     // commit transaction
     tx.commit().join();
+    tx.close();
 
     return StatusCode.SUCCESS;
   }
@@ -203,6 +204,7 @@ public class TableManagerImpl implements TableManager{
       tx.clear(r);
 
       tx.commit().join();
+      tx.close();
 
       tableDir.remove(db);
 
@@ -249,43 +251,36 @@ public class TableManagerImpl implements TableManager{
       // iterate over key-value pairs in this range and make TableMetadata object from it
       List<KeyValue> keyValues = tx.getRange(r).asList().join();
 
+      int count = 0;
       for (KeyValue kv : keyValues)
       {
-        // use Tuple api to transform bytes to key and value tuples
-        Tuple keyTuple = Tuple.fromBytes(kv.getKey());
-        Tuple valueTuple = Tuple.fromBytes(kv.getValue());
-
-        // structure (tableName, tableValue) what is this?
-        //System.out.println("attribute name:" + (String)keyTuple.get(0));
-
-        List<Object> keyItems = keyTuple.getItems();
-        List<Object> valueItems = valueTuple.getItems();
-
-        attributeNames.add((String)keyItems.get(1));
-        attributeTypes.add(AttributeType.valueOf((String) keyItems.get(2)));
-
-        System.out.println("attrName: " + keyItems.get(1));
-        System.out.println("value tuple size: " + valueItems.size());
-        // check if primary key attribute
-        if ((Boolean) valueItems.get(0))
+        if (count > 0)
         {
-          primaryKeyAttributeNames.add((String)keyItems.get(1));
+          // use Tuple api to transform bytes to key and value tuples
+          Tuple keyTuple = Tuple.fromBytes(kv.getKey());
+          Tuple valueTuple = Tuple.fromBytes(kv.getValue());
+
+          List<Object> keyItems = keyTuple.getItems();
+          List<Object> valueItems = valueTuple.getItems();
+
+          attributeNames.add((String)keyItems.get(1));
+          attributeTypes.add(AttributeType.valueOf((String) keyItems.get(2)));
+
+          System.out.println("attrName: " + keyItems.get(1));
+          System.out.println("value tuple size: " + valueItems.size());
+          // check if primary key attribute
+          if ((Boolean) valueItems.get(0))
+          {
+            primaryKeyAttributeNames.add((String)keyItems.get(1));
+          }
+
+          System.out.println("printing key obj 0: " + keyItems.get(0));
+          System.out.println("printing key obj 1: " + keyItems.get(1));
+          System.out.println("printing key obj 2: " + keyItems.get(2));
+
+          System.out.println("val obj 0: " + valueItems.get(0));
         }
-        System.out.println("printing key obj 0: " + keyItems.get(0));
-        System.out.println("printing key obj 1: " + keyItems.get(1));
-        System.out.println("printing key obj 2: " + keyItems.get(2));
-
-        System.out.println("val obj 0: " + valueItems.get(0));
-       /* for (Object obj : keyTuple.getItems())
-        {
-          System.out.println("printing key obj 0: " + keyItems.get(1));
-        }
-
-        for (Object obj : valueTuple.getItems())
-        {
-          System.out.println("printing value objs: " + obj);
-        }*/
-
+        count++;
       }
       if (!attributeNames.isEmpty() && !attributeNames.isEmpty() && !primaryKeyAttributeNames.isEmpty())
       {
@@ -302,6 +297,8 @@ public class TableManagerImpl implements TableManager{
     }
 
     System.out.println("Done with ListTables");
+
+    tx.close();
 
     return result;
   }
@@ -350,27 +347,8 @@ public class TableManagerImpl implements TableManager{
     tx.set(metaDir.pack(keyTuple), valueTuple.pack());
 
     tx.commit().join();
+    tx.close();
 
-    // check table
-    /*if (value == null)
-    {
-      return StatusCode.TABLE_NOT_FOUND;
-    }
-    // check attribute name/type
-    if (attributeName == "" || attributeType == null)
-    {
-      return StatusCode.TABLE_CREATION_ATTRIBUTE_INVALID;
-    }
-    // attribute already exists
-    if (value.getAttributes().containsKey(attributeName))
-    {
-      return StatusCode.ATTRIBUTE_ALREADY_EXISTS;
-    }
-
-    value.getAttributes().put(attributeName, attributeType);*/
-
-    // Tuple keyTuple = new Tuple();
-    //keyTuple = keyTuple.add()
     System.out.println("Done with addAttribute");
     return StatusCode.SUCCESS;
   }
