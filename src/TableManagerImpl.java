@@ -197,16 +197,15 @@ public class TableManagerImpl implements TableManager{
      // start deleting
      final DirectorySubspace tableDir = rootDir.open(db, PathUtil.from(tableName)).join();
 
-      Range r = tableDir.range();
+    Range r = tableDir.range();
 
-      System.out.println("Running deleteTable");
-      Transaction tx = db.createTransaction();
-      tx.clear(r);
+    System.out.println("Running deleteTable");
+    Transaction tx = db.createTransaction();
+    tx.clear(r);
 
-      tx.commit().join();
-      tx.close();
+    tx.commit().join();
 
-      tableDir.remove(db);
+    tableDir.remove(db);
 
     System.out.println("Printing remaining keys: " + listTables().size());
     for (String key : listTables().keySet())
@@ -215,6 +214,7 @@ public class TableManagerImpl implements TableManager{
     }
 
     System.out.println("Done with deleteTable");
+    tx.close();
 
     return StatusCode.SUCCESS;
 
