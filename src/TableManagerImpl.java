@@ -177,12 +177,13 @@ public class TableManagerImpl implements TableManager{
       tx.clear(r);
       tx.commit().join();
 
-    System.out.println("Done with deleteTable");
     System.out.println("Printing remaining keys" + listTables().size());
     for (String key : listTables().keySet())
     {
       System.out.println(key);
     }
+
+    System.out.println("Done with deleteTable");
 
     return StatusCode.SUCCESS;
 
@@ -221,7 +222,7 @@ public class TableManagerImpl implements TableManager{
 
       for (KeyValue kv : keyValues)
       {
-        System.out.println("Entered");
+        // System.out.println("Entered");
         // use Tuple api to transform bytes to key and value tuples
         Tuple keyTuple = Tuple.fromBytes(kv.getKey());
         Tuple valueTuple = Tuple.fromBytes(kv.getValue());
@@ -241,15 +242,15 @@ public class TableManagerImpl implements TableManager{
           primaryKeyAttributeNames.add((String)keyItems.get(1));
         }
 
-        for (Object obj : keyTuple.getItems())
-        {
-          System.out.println("printing key objs: " + obj);
-        }
-
-        for (Object obj : valueTuple.getItems())
-        {
-          System.out.println("printing value objs: " + obj);
-        }
+//        for (Object obj : keyTuple.getItems())
+//        {
+//          System.out.println("printing key objs: " + obj);
+//        }
+//
+//        for (Object obj : valueTuple.getItems())
+//        {
+//          System.out.println("printing value objs: " + obj);
+//        }
 
       }
       if (!attributeNames.isEmpty() && !attributeNames.isEmpty() && !primaryKeyAttributeNames.isEmpty())

@@ -58,6 +58,8 @@ public class TableManagerTest {
    */
   @Test
   public void unitTest2() {
+    System.out.println("Starting test 2");
+
     tableManager.dropAllTables();
 
     assertEquals(StatusCode.SUCCESS, tableManager.createTable(EmployeeTableName,
@@ -74,6 +76,7 @@ public class TableManagerTest {
    */
   @Test
   public void unitTest3() {
+    System.out.println("Starting test 3");
     tableManager.dropAllTables();
 
     TableMetadata EmployeeTable = new TableMetadata(EmployeeTableAttributeNames, EmployeeTableAttributeTypes,
